@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Username Combination Generator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 24px;
+            font-family: Arial, sans-serif;
+            color: #172033;
+            background: #f4f7fb;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 28px;
+            background: #ffffff;
+            border: 1px solid #e4e9f2;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(23, 32, 51, 0.08);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 26px;
+        }
+
+        .description {
+            margin: 0 0 24px;
+            color: #647085;
+            line-height: 1.6;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #cfd7e6;
+            border-radius: 9px;
+            outline: none;
+            font-size: 16px;
+            background: #ffffff;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 14px;
+            border: 1px solid #d8dfeb;
+            border-radius: 9px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .option:has(input:checked) {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 11px 17px;
+            border: 0;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .primary-button {
+            color: #ffffff;
+            background: #2563eb;
+        }
+
+        .secondary-button {
+            color: #172033;
+            background: #e9eef7;
+        }
+
+        .success-button {
+            color: #ffffff;
+            background: #15803d;
+        }
+
+        .danger-button {
+            color: #ffffff;
+            background: #dc2626;
+        }
+
+        .stats {
+            display: none;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stats.visible {
+            display: grid;
+        }
+
+        .stat-card {
+            padding: 14px;
+            border: 1px solid #e3e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .stat-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #647085;
+            font-size: 12px;
+        }
+
+        .stat-value {
+            display: block;
+            overflow-wrap: anywhere;
+            font-size: 15px;
+        }
+
+        .message {
+            display: none;
+            margin-bottom: 15px;
+            padding: 12px 14px;
+            border-radius: 9px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.error {
+            display: block;
+            color: #991b1b;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .message.success {
+            display: block;
+            color: #166534;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.info {
+            display: block;
+            color: #1e40af;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .progress-wrapper {
+            display: none;
+            margin-bottom: 16px;
+        }
+
+        .progress-wrapper.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+            color: #536079;
+            font-size: 13px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e9eef7;
+        }
+
+        .progress-fill {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: #2563eb;
+            transition: width 0.15s ease;
+        }
+
+        textarea {
+            display: none;
+            width: 100%;
+            min-height: 420px;
+            padding: 15px;
+            border: 1px solid #d8dfeb;
+            border-radius: 9px;
+            resize: vertical;
+            outline: none;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.55;
+            background: #fbfcfe;
+        }
+
+        textarea.visible {
+            display: block;
+        }
+
+        .pagination {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .pagination.visible {
+            display: flex;
+        }
+
+        .pagination-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .page-info {
+            color: #536079;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .jump-form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .jump-form input {
+            width: 150px;
+        }
+
+        .note {
+            margin-top: 16px;
+            color: #7a8497;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        @media (max-width: 760px) {
+            body {
+                padding: 14px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .settings-grid,
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .pagination {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .pagination-actions,
+            .jump-form {
+                width: 100%;
+            }
+
+            .pagination-actions button {
+                flex: 1;
+            }
+
+            .jump-form input {
+                flex: 1;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>Username Combination Generator</h1>
+
+        <p class="description">
+            In the username pattern, <strong>*</strong> is replaced with a number (0-9) and <strong>#</strong> with a
+            letter (a-z). Browse results page by page, copy any page of up to 50,000, or stream up to 50,000,000 (5
+            crore) usernames straight to a .txt file.
+        </p>
+
+        <form id="generatorForm">
+            <div class="field">
+                <label class="field-label" for="username">
+                    Username pattern
+                </label>
+
+                <input type="text" id="username" placeholder="Example: raziul**## (* = 0-9, # = a-z)" autocomplete="off"
+                    required>
+            </div>
+
+            <div class="field">
+                <span class="field-label">Character (#) mode</span>
+
+                <div class="options">
+                    <label class="option">
+                        <input type="radio" name="charCase" value="lowercase" checked>
+
+                        Lowercase (a-z)
+                    </label>
+
+                    <label class="option">
+                        <input type="radio" name="charCase" value="uppercase">
+
+                        Uppercase (A-Z)
+                    </label>
+
+                    <label class="option">
+                        <input type="radio" name="charCase" value="mixed">
+
+                        Mixed (a-z & A-Z)
+                    </label>
+                </div>
+            </div>
+
+            <input type="hidden" id="pageSize" value="50000">
+            <input type="hidden" id="startPage" value="1">
+
+            <div class="field">
+                <label class="field-label" for="downloadLimit">
+                    Download limit (how many to download, max 50,000,000)
+                </label>
+
+                <input type="number" id="downloadLimit" min="1" max="50000000" step="1" value="1000000">
+            </div>
+
+            <div class="actions">
+                <button type="submit" id="generateButton" class="primary-button">
+                    Generate
+                </button>
+
+                <button type="button" id="copyButton" class="secondary-button" disabled>
+                    Copy current page
+                </button>
+
+                <button type="button" id="downloadButton" class="success-button" disabled>
+                    Download current page
+                </button>
+
+                <button type="button" id="downloadAllButton" class="success-button" disabled>
+                    Download all (.txt)
+                </button>
+
+                <button type="button" id="cancelButton" class="danger-button" hidden>
+                    Cancel
+                </button>
+
+                <button type="button" id="clearButton" class="secondary-button">
+                    Clear
+                </button>
+            </div>
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <div id="progressWrapper" class="progress-wrapper">
+            <div class="progress-header">
+                <span id="progressText">Generating...</span>
+                <strong id="progressPercentage">0%</strong>
+            </div>
+
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div id="stats" class="stats">
+            <div class="stat-card">
+                <span class="stat-label">Wildcards</span>
+                <strong id="wildcardCount" class="stat-value">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Total combinations</span>
+                <strong id="combinationCount" class="stat-value">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Total pages</span>
+                <strong id="totalPages" class="stat-value">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Current range</span>
+                <strong id="currentRange" class="stat-value">0</strong>
+            </div>
+        </div>
+
+        <textarea id="result" readonly spellcheck="false"
+            placeholder="Generated usernames will appear here..."></textarea>
+
+        <div id="pagination" class="pagination">
+            <div class="pagination-actions">
+                <button type="button" id="firstButton" class="secondary-button">
+                    First
+                </button>
+
+                <button type="button" id="previousButton" class="secondary-button">
+                    Previous
+                </button>
+
+                <button type="button" id="nextButton" class="secondary-button">
+                    Next
+                </button>
+
+                <button type="button" id="lastButton" class="secondary-button">
+                    Last
+                </button>
+            </div>
+
+            <div id="pageInfo" class="page-info">
+                Page 1 of 1
+            </div>
+
+            <form id="jumpForm" class="jump-form">
+                <input type="number" id="jumpPage" min="1" placeholder="Page number">
+
+                <button type="submit" class="primary-button">
+                    Go
+                </button>
+            </form>
+        </div>
+
+        <p class="note">
+            Copy works while a page has 50,000 results or fewer; larger pages are
+            download-only. "Download all" writes usernames to a .txt file in chunks —
+            on Chrome/Edge it streams straight to disk, so even crore-scale files save
+            without freezing the browser. Progress is shown and you can cancel anytime.
+        </p>
+    </main>
+
+    <script>
+        const generatorForm =
+            document.getElementById('generatorForm');
+
+        const jumpForm =
+            document.getElementById('jumpForm');
+
+        const usernameInput =
+            document.getElementById('username');
+
+        const pageSizeSelect =
+            document.getElementById('pageSize');
+
+        const startPageInput =
+            document.getElementById('startPage');
+
+        const jumpPageInput =
+            document.getElementById('jumpPage');
+
+        const resultTextarea =
+            document.getElementById('result');
+
+        const messageBox =
+            document.getElementById('message');
+
+        const statsBox =
+            document.getElementById('stats');
+
+        const paginationBox =
+            document.getElementById('pagination');
+
+        const progressWrapper =
+            document.getElementById('progressWrapper');
+
+        const progressText =
+            document.getElementById('progressText');
+
+        const progressPercentage =
+            document.getElementById('progressPercentage');
+
+        const progressFill =
+            document.getElementById('progressFill');
+
+        const wildcardCountElement =
+            document.getElementById('wildcardCount');
+
+        const combinationCountElement =
+            document.getElementById('combinationCount');
+
+        const totalPagesElement =
+            document.getElementById('totalPages');
+
+        const currentRangeElement =
+            document.getElementById('currentRange');
+
+        const pageInfoElement =
+            document.getElementById('pageInfo');
+
+        const generateButton =
+            document.getElementById('generateButton');
+
+        const copyButton =
+            document.getElementById('copyButton');
+
+        const downloadButton =
+            document.getElementById('downloadButton');
+
+        const cancelButton =
+            document.getElementById('cancelButton');
+
+        const clearButton =
+            document.getElementById('clearButton');
+
+        const limitInput =
+            document.getElementById('downloadLimit');
+
+        const downloadAllButton =
+            document.getElementById('downloadAllButton');
+
+        const firstButton =
+            document.getElementById('firstButton');
+
+        const previousButton =
+            document.getElementById('previousButton');
+
+        const nextButton =
+            document.getElementById('nextButton');
+
+        const lastButton =
+            document.getElementById('lastButton');
+
+        const characterSets = {
+            lowercase: 'abcdefghijklmnopqrstuvwxyz',
+            uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            mixed: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        };
+
+        const numberSet = '0123456789';
+
+        const COPY_LIMIT = 50000;
+        const MAX_DOWNLOAD_LIMIT = 50000000;
+
+        const state = {
+            pattern: '',
+            patternTokens: [],
+            parsedWildcards: [],
+            numberCount: 0,
+            charCount: 0,
+            totalWildcards: 0,
+            totalCombinations: 0n,
+            pageSize: 50000n,
+            totalPages: 0n,
+            currentPage: 1n,
+            isGenerating: false,
+            generationToken: 0,
+            currentResults: ''
+        };
+
+        function parsePattern(pattern, charCase) {
+            const letterSet = characterSets[charCase] || characterSets.lowercase;
+            const wildcards = [];
+            let numberCount = 0;
+            let charCount = 0;
+
+            for (let i = 0; i < pattern.length; i++) {
+                const char = pattern[i];
+                if (char === '*') {
+                    wildcards.push({
+                        type: 'number',
+                        chars: numberSet,
+                        base: BigInt(numberSet.length)
+                    });
+                    numberCount++;
+                } else if (char === '#') {
+                    wildcards.push({
+                        type: 'character',
+                        chars: letterSet,
+                        base: BigInt(letterSet.length)
+                    });
+                    charCount++;
+                }
+            }
+
+            return {
+                wildcards,
+                numberCount,
+                charCount,
+                totalWildcards: numberCount + charCount
+            };
+        }
+
+        function tokenizePattern(pattern) {
+            const tokens = [];
+            let text = '';
+
+            for (let i = 0; i < pattern.length; i++) {
+                const char = pattern[i];
+                if (char === '*' || char === '#') {
+                    if (text.length > 0) {
+                        tokens.push(text);
+                        text = '';
+                    }
+                    tokens.push(null);
+                } else {
+                    text += char;
+                }
+            }
+
+            if (text.length > 0) {
+                tokens.push(text);
+            }
+
+            return tokens;
+        }
+
+        generatorForm.addEventListener(
+            'submit',
+            async function (event) {
+                event.preventDefault();
+
+                if (state.isGenerating) {
+                    return;
+                }
+
+                clearMessage();
+
+                const pattern = usernameInput.value.trim();
+
+                const charCase = (
+                    document.querySelector('input[name="charCase"]:checked') || {}
+                ).value || 'lowercase';
+
+                if (!pattern) {
+                    showMessage(
+                        'Enter a username pattern.',
+                        'error'
+                    );
+
+                    return;
+                }
+
+                const parsed = parsePattern(pattern, charCase);
+
+                if (parsed.totalWildcards === 0) {
+                    showMessage(
+                        'The username pattern must contain at least one * (number) or # (letter).',
+                        'error'
+                    );
+
+                    return;
+                }
+
+                let requestedLimit = parseInt(limitInput.value, 10);
+                if (!Number.isFinite(requestedLimit) || requestedLimit < 1) {
+                    requestedLimit = 50000;
+                }
+                const pageSize = BigInt(requestedLimit);
+
+                let totalCombinations = 1n;
+                for (const w of parsed.wildcards) {
+                    totalCombinations *= w.base;
+                }
+
+                const totalPages = divideAndRoundUp(
+                    totalCombinations,
+                    pageSize
+                );
+
+                let requestedPage = parsePositiveBigInt(
+                    startPageInput.value,
+                    1n
+                );
+
+                requestedPage = clampBigInt(
+                    requestedPage,
+                    1n,
+                    totalPages
+                );
+
+                state.pattern = pattern;
+                state.patternTokens = tokenizePattern(pattern);
+                state.parsedWildcards = parsed.wildcards;
+                state.numberCount = parsed.numberCount;
+                state.charCount = parsed.charCount;
+                state.totalWildcards = parsed.totalWildcards;
+                state.totalCombinations = totalCombinations;
+                state.pageSize = pageSize;
+                state.totalPages = totalPages;
+                state.currentPage = requestedPage;
+
+                await renderCurrentPage();
+            }
+        );
+
+        async function renderCurrentPage() {
+            if (!state.pattern || state.isGenerating) {
+                return;
+            }
+
+            const token = ++state.generationToken;
+
+            setGeneratingState(true);
+            clearMessage();
+
+            const startIndex =
+                (state.currentPage - 1n) *
+                state.pageSize;
+
+            const endIndex = minBigInt(
+                startIndex + state.pageSize,
+                state.totalCombinations
+            );
+
+            const pageLength =
+                Number(endIndex - startIndex);
+
+            try {
+                const results =
+                    new Array(pageLength);
+
+                const chunkSize = 5000;
+
+                for (
+                    let chunkStart = 0;
+                    chunkStart < pageLength;
+                    chunkStart += chunkSize
+                ) {
+                    if (
+                        token !== state.generationToken
+                    ) {
+                        return;
+                    }
+
+                    const chunkEnd = Math.min(
+                        chunkStart + chunkSize,
+                        pageLength
+                    );
+
+                    for (
+                        let localIndex = chunkStart;
+                        localIndex < chunkEnd;
+                        localIndex++
+                    ) {
+                        const combinationIndex =
+                            startIndex +
+                            BigInt(localIndex);
+
+                        results[localIndex] =
+                            generateCombinationAtIndex(
+                                state.patternTokens,
+                                state.parsedWildcards,
+                                combinationIndex
+                            );
+                    }
+
+                    const progress =
+                        Math.round(
+                            (
+                                chunkEnd /
+                                pageLength
+                            ) * 100
+                        );
+
+                    updateProgress(
+                        progress,
+                        chunkEnd,
+                        pageLength
+                    );
+
+                    await yieldToBrowser();
+                }
+
+                if (
+                    token !== state.generationToken
+                ) {
+                    return;
+                }
+
+                const output = results.join('\n');
+
+                state.currentResults = output;
+                resultTextarea.value = output;
+                resultTextarea.classList.add('visible');
+                resultTextarea.scrollTop = 0;
+
+                updatePageInformation(
+                    startIndex,
+                    endIndex,
+                    pageLength
+                );
+
+                showMessage(
+                    `${formatNumber(pageLength)} results generated.`,
+                    'success'
+                );
+            } catch (error) {
+                console.error(error);
+
+                state.currentResults = '';
+                resultTextarea.value = '';
+
+                showMessage(
+                    'Something went wrong generating this page. Try a smaller page size.',
+                    'error'
+                );
+            } finally {
+                if (
+                    token === state.generationToken
+                ) {
+                    setGeneratingState(false);
+                }
+            }
+        }
+
+        function generateCombinationAtIndex(
+            patternTokens,
+            parsedWildcards,
+            combinationIndex
+        ) {
+            let currentIndex = combinationIndex;
+            const k = parsedWildcards.length;
+            const replacements = new Array(k);
+
+            for (
+                let position = k - 1;
+                position >= 0;
+                position--
+            ) {
+                const w = parsedWildcards[position];
+                const charIndex = Number(currentIndex % w.base);
+                replacements[position] = w.chars[charIndex];
+                currentIndex = currentIndex / w.base;
+            }
+
+            let replacementPosition = 0;
+            let result = '';
+
+            for (let i = 0; i < patternTokens.length; i++) {
+                const token = patternTokens[i];
+                if (token === null) {
+                    result += replacements[replacementPosition++];
+                } else {
+                    result += token;
+                }
+            }
+
+            return result;
+        }
+
+        function updatePageInformation(
+            startIndex,
+            endIndex,
+            pageLength
+        ) {
+            statsBox.classList.add('visible');
+            paginationBox.classList.add('visible');
+
+            let wildcardText = formatNumber(state.totalWildcards);
+            if (state.totalWildcards > 0) {
+                const details = [];
+                if (state.numberCount > 0) {
+                    details.push(`${formatNumber(state.numberCount)} *`);
+                }
+                if (state.charCount > 0) {
+                    details.push(`${formatNumber(state.charCount)} #`);
+                }
+                wildcardText += ` (${details.join(', ')})`;
+            }
+
+            wildcardCountElement.textContent = wildcardText;
+
+            combinationCountElement.textContent =
+                formatBigInt(
+                    state.totalCombinations
+                );
+
+            totalPagesElement.textContent =
+                formatBigInt(
+                    state.totalPages
+                );
+
+            const visibleStart =
+                pageLength > 0
+                    ? startIndex + 1n
+                    : 0n;
+
+            currentRangeElement.textContent =
+                `${formatBigInt(visibleStart)}–` +
+                `${formatBigInt(endIndex)}`;
+
+            pageInfoElement.textContent =
+                `Page ${formatBigInt(state.currentPage)} of ` +
+                `${formatBigInt(state.totalPages)}`;
+
+            jumpPageInput.max =
+                state.totalPages.toString();
+
+            jumpPageInput.value =
+                state.currentPage.toString();
+
+            updateNavigationButtons();
+
+            if (pageLength > COPY_LIMIT) {
+                copyButton.hidden = true;
+                copyButton.disabled = true;
+            } else {
+                copyButton.hidden = false;
+                copyButton.disabled = pageLength === 0;
+            }
+
+            downloadButton.disabled =
+                pageLength === 0;
+
+            downloadAllButton.disabled = false;
+        }
+
+        function updateNavigationButtons() {
+            const isFirstPage =
+                state.currentPage === 1n;
+
+            const isLastPage =
+                state.currentPage ===
+                state.totalPages;
+
+            firstButton.disabled =
+                state.isGenerating ||
+                isFirstPage;
+
+            previousButton.disabled =
+                state.isGenerating ||
+                isFirstPage;
+
+            nextButton.disabled =
+                state.isGenerating ||
+                isLastPage;
+
+            lastButton.disabled =
+                state.isGenerating ||
+                isLastPage;
+        }
+
+        firstButton.addEventListener(
+            'click',
+            async function () {
+                await goToPage(1n);
+            }
+        );
+
+        previousButton.addEventListener(
+            'click',
+            async function () {
+                await goToPage(
+                    state.currentPage - 1n
+                );
+            }
+        );
+
+        nextButton.addEventListener(
+            'click',
+            async function () {
+                await goToPage(
+                    state.currentPage + 1n
+                );
+            }
+        );
+
+        lastButton.addEventListener(
+            'click',
+            async function () {
+                await goToPage(
+                    state.totalPages
+                );
+            }
+        );
+
+        jumpForm.addEventListener(
+            'submit',
+            async function (event) {
+                event.preventDefault();
+
+                if (
+                    !state.pattern ||
+                    state.isGenerating
+                ) {
+                    return;
+                }
+
+                const page =
+                    parsePositiveBigInt(
+                        jumpPageInput.value,
+                        1n
+                    );
+
+                await goToPage(page);
+            }
+        );
+
+        async function goToPage(page) {
+            if (
+                !state.pattern ||
+                state.totalPages < 1n ||
+                state.isGenerating
+            ) {
+                return;
+            }
+
+            state.currentPage =
+                clampBigInt(
+                    page,
+                    1n,
+                    state.totalPages
+                );
+
+            await renderCurrentPage();
+        }
+
+        pageSizeSelect.addEventListener(
+            'change',
+            async function () {
+                if (
+                    !state.pattern ||
+                    state.isGenerating
+                ) {
+                    return;
+                }
+
+                state.pageSize =
+                    BigInt(
+                        pageSizeSelect.value
+                    );
+
+                state.totalPages =
+                    divideAndRoundUp(
+                        state.totalCombinations,
+                        state.pageSize
+                    );
+
+                state.currentPage =
+                    clampBigInt(
+                        state.currentPage,
+                        1n,
+                        state.totalPages
+                    );
+
+                await renderCurrentPage();
+            }
+        );
+
+        copyButton.addEventListener(
+            'click',
+            async function () {
+                if (!state.currentResults) {
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(
+                        state.currentResults
+                    );
+
+                    showMessage(
+                        'All usernames on this page have been copied.',
+                        'success'
+                    );
+                } catch (error) {
+                    resultTextarea.focus();
+                    resultTextarea.select();
+
+                    const copied =
+                        document.execCommand('copy');
+
+                    showMessage(
+                        copied
+                            ? 'All usernames on this page have been copied.'
+                            : 'Could not copy.',
+                        copied
+                            ? 'success'
+                            : 'error'
+                    );
+                }
+            }
+        );
+
+        downloadButton.addEventListener(
+            'click',
+            function () {
+                if (!state.currentResults) {
+                    return;
+                }
+
+                const blob = new Blob(
+                    [state.currentResults],
+                    {
+                        type:
+                            'text/plain;charset=utf-8'
+                    }
+                );
+
+                const downloadUrl =
+                    URL.createObjectURL(blob);
+
+                const link =
+                    document.createElement('a');
+
+                link.href = downloadUrl;
+
+                link.download =
+                    `username-combinations-page-${state.currentPage}.txt`;
+
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                URL.revokeObjectURL(
+                    downloadUrl
+                );
+            }
+        );
+
+        function generateCombinationFast(
+            patternTokens,
+            parsedWildcards,
+            indexNumber
+        ) {
+            let current = indexNumber;
+            const k = parsedWildcards.length;
+            const replacements = new Array(k);
+
+            for (
+                let position = k - 1;
+                position >= 0;
+                position--
+            ) {
+                const base =
+                    parsedWildcards[position].chars.length;
+                const charIndex = current % base;
+                replacements[position] =
+                    parsedWildcards[position].chars[charIndex];
+                current = Math.floor(current / base);
+            }
+
+            let replacementPosition = 0;
+            let result = '';
+
+            for (let i = 0; i < patternTokens.length; i++) {
+                const token = patternTokens[i];
+                result += token === null
+                    ? replacements[replacementPosition++]
+                    : token;
+            }
+
+            return result;
+        }
+
+        function buildDownloadName(count) {
+            const safePattern = state.pattern
+                .replace(/[^a-zA-Z0-9._-]+/g, '_')
+                .slice(0, 40) || 'usernames';
+
+            return `usernames-${safePattern}-${count}.txt`;
+        }
+
+        function triggerBlobDownload(parts, fileName) {
+            const blob = new Blob(parts, {
+                type: 'text/plain;charset=utf-8'
+            });
+
+            const downloadUrl =
+                URL.createObjectURL(blob);
+
+            const link =
+                document.createElement('a');
+
+            link.href = downloadUrl;
+            link.download = fileName;
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            URL.revokeObjectURL(downloadUrl);
+        }
+
+        downloadAllButton.addEventListener(
+            'click',
+            async function () {
+                if (
+                    !state.pattern ||
+                    state.isGenerating
+                ) {
+                    return;
+                }
+
+                let limit = parseInt(
+                    limitInput.value,
+                    10
+                );
+
+                if (
+                    !Number.isFinite(limit) ||
+                    limit < 1
+                ) {
+                    limit = 1;
+                }
+
+                if (limit > MAX_DOWNLOAD_LIMIT) {
+                    limit = MAX_DOWNLOAD_LIMIT;
+                }
+
+                limitInput.value = String(limit);
+
+                const limitBig = BigInt(limit);
+
+                const totalToWrite =
+                    limitBig < state.totalCombinations
+                        ? limitBig
+                        : state.totalCombinations;
+
+                const count = Number(totalToWrite);
+
+                if (count <= 0) {
+                    showMessage(
+                        'Nothing to download for this pattern.',
+                        'error'
+                    );
+                    return;
+                }
+
+                const fileName =
+                    buildDownloadName(count);
+
+                let writable = null;
+                let usingFileSystem = false;
+
+                if (window.showSaveFilePicker) {
+                    try {
+                        const handle =
+                            await window.showSaveFilePicker({
+                                suggestedName: fileName,
+                                types: [{
+                                    description: 'Text file',
+                                    accept: {
+                                        'text/plain': ['.txt']
+                                    }
+                                }]
+                            });
+
+                        writable =
+                            await handle.createWritable();
+                        usingFileSystem = true;
+                    } catch (error) {
+                        if (
+                            error &&
+                            error.name === 'AbortError'
+                        ) {
+                            return;
+                        }
+                        usingFileSystem = false;
+                    }
+                }
+
+                const token = ++state.generationToken;
+
+                setGeneratingState(true, {
+                    suppressPreview: true
+                });
+
+                progressText.textContent =
+                    'Preparing download...';
+
+                const chunkSize = 50000;
+                const parts = [];
+
+                try {
+                    for (
+                        let start = 0;
+                        start < count;
+                        start += chunkSize
+                    ) {
+                        if (
+                            token !== state.generationToken
+                        ) {
+                            if (usingFileSystem && writable) {
+                                try {
+                                    await writable.abort();
+                                } catch (abortError) { }
+                            }
+                            return;
+                        }
+
+                        const end = Math.min(
+                            start + chunkSize,
+                            count
+                        );
+
+                        const lines =
+                            new Array(end - start);
+
+                        for (
+                            let index = start;
+                            index < end;
+                            index++
+                        ) {
+                            lines[index - start] =
+                                generateCombinationFast(
+                                    state.patternTokens,
+                                    state.parsedWildcards,
+                                    index
+                                );
+                        }
+
+                        const chunkText =
+                            lines.join('\n') + '\n';
+
+                        if (usingFileSystem) {
+                            await writable.write(chunkText);
+                        } else {
+                            parts.push(chunkText);
+                        }
+
+                        const progress = Math.round(
+                            (end / count) * 100
+                        );
+
+                        updateProgress(
+                            progress,
+                            end,
+                            count
+                        );
+
+                        await yieldToBrowser();
+                    }
+
+                    if (
+                        token !== state.generationToken
+                    ) {
+                        if (usingFileSystem && writable) {
+                            try {
+                                await writable.abort();
+                            } catch (abortError) { }
+                        }
+                        return;
+                    }
+
+                    if (usingFileSystem) {
+                        await writable.close();
+                    } else {
+                        triggerBlobDownload(
+                            parts,
+                            fileName
+                        );
+                    }
+
+                    showMessage(
+                        `${formatNumber(count)} usernames downloaded to ${fileName}.`,
+                        'success'
+                    );
+                } catch (error) {
+                    console.error(error);
+
+                    if (usingFileSystem && writable) {
+                        try {
+                            await writable.abort();
+                        } catch (abortError) {
+                            console.error(abortError);
+                        }
+                    }
+
+                    showMessage(
+                        'Download failed. Try a smaller limit.',
+                        'error'
+                    );
+                } finally {
+                    if (
+                        token === state.generationToken
+                    ) {
+                        setGeneratingState(false);
+                    }
+                }
+            }
+        );
+
+        cancelButton.addEventListener(
+            'click',
+            function () {
+                if (!state.isGenerating) {
+                    return;
+                }
+
+                state.generationToken++;
+                state.isGenerating = false;
+
+                setGeneratingState(false);
+
+                showMessage(
+                    'Generation cancelled.',
+                    'info'
+                );
+            }
+        );
+
+        clearButton.addEventListener(
+            'click',
+            function () {
+                state.generationToken++;
+
+                usernameInput.value = '';
+                startPageInput.value = '1';
+                jumpPageInput.value = '';
+                pageSizeSelect.value = '50000';
+                limitInput.value = '1000000';
+
+                resetState();
+                resetOutput();
+
+                usernameInput.focus();
+            }
+        );
+
+        function setGeneratingState(
+            isGenerating,
+            options
+        ) {
+            options = options || {};
+
+            state.isGenerating =
+                isGenerating;
+
+            generateButton.disabled =
+                isGenerating;
+
+            usernameInput.disabled =
+                isGenerating;
+
+            pageSizeSelect.disabled =
+                isGenerating;
+
+            startPageInput.disabled =
+                isGenerating;
+
+            limitInput.disabled =
+                isGenerating;
+
+            document
+                .querySelectorAll(
+                    'input[name="charCase"]'
+                )
+                .forEach(input => {
+                    input.disabled =
+                        isGenerating;
+                });
+
+            copyButton.disabled =
+                isGenerating ||
+                !state.currentResults;
+
+            downloadButton.disabled =
+                isGenerating ||
+                !state.currentResults;
+
+            downloadAllButton.disabled =
+                isGenerating ||
+                !state.pattern;
+
+            clearButton.disabled =
+                isGenerating;
+
+            cancelButton.hidden =
+                !isGenerating;
+
+            jumpPageInput.disabled =
+                isGenerating;
+
+            jumpForm
+                .querySelector('button')
+                .disabled = isGenerating;
+
+            progressWrapper.classList.toggle(
+                'visible',
+                isGenerating
+            );
+
+            if (isGenerating && !options.suppressPreview) {
+                updateProgress(0, 0, 0);
+
+                resultTextarea.value =
+                    'Generating results...';
+
+                resultTextarea.classList.add(
+                    'visible'
+                );
+            }
+
+            updateNavigationButtons();
+        }
+
+        function updateProgress(
+            percentage,
+            completed,
+            total
+        ) {
+            progressPercentage.textContent =
+                `${percentage}%`;
+
+            progressFill.style.width =
+                `${percentage}%`;
+
+            if (total > 0) {
+                progressText.textContent =
+                    `Generated ${formatNumber(completed)} of ` +
+                    `${formatNumber(total)}`;
+            } else {
+                progressText.textContent =
+                    'Preparing...';
+            }
+        }
+
+        function yieldToBrowser() {
+            return new Promise(resolve => {
+                setTimeout(resolve, 0);
+            });
+        }
+
+        function divideAndRoundUp(
+            value,
+            divisor
+        ) {
+            return (
+                value +
+                divisor -
+                1n
+            ) / divisor;
+        }
+
+        function minBigInt(
+            first,
+            second
+        ) {
+            return first < second
+                ? first
+                : second;
+        }
+
+        function clampBigInt(
+            value,
+            minimum,
+            maximum
+        ) {
+            if (value < minimum) {
+                return minimum;
+            }
+
+            if (value > maximum) {
+                return maximum;
+            }
+
+            return value;
+        }
+
+        function parsePositiveBigInt(
+            value,
+            fallback
+        ) {
+            try {
+                const parsed =
+                    BigInt(
+                        String(value).trim()
+                    );
+
+                return parsed > 0n
+                    ? parsed
+                    : fallback;
+            } catch (error) {
+                return fallback;
+            }
+        }
+
+        function formatBigInt(value) {
+            return value.toLocaleString(
+                'en-US'
+            );
+        }
+
+        function formatNumber(value) {
+            return Number(value).toLocaleString(
+                'en-US'
+            );
+        }
+
+        function showMessage(
+            message,
+            type
+        ) {
+            messageBox.textContent =
+                message;
+
+            messageBox.className =
+                `message ${type}`;
+        }
+
+        function clearMessage() {
+            messageBox.textContent = '';
+            messageBox.className =
+                'message';
+        }
+
+        function resetState() {
+            state.pattern = '';
+            state.patternTokens = [];
+            state.parsedWildcards = [];
+            state.numberCount = 0;
+            state.charCount = 0;
+            state.totalWildcards = 0;
+            state.totalCombinations = 0n;
+            state.pageSize = 50000n;
+            state.totalPages = 0n;
+            state.currentPage = 1n;
+            state.isGenerating = false;
+            state.currentResults = '';
+        }
+
+        function resetOutput() {
+            resultTextarea.value = '';
+            resultTextarea.classList.remove(
+                'visible'
+            );
+
+            statsBox.classList.remove(
+                'visible'
+            );
+
+            paginationBox.classList.remove(
+                'visible'
+            );
+
+            progressWrapper.classList.remove(
+                'visible'
+            );
+
+            copyButton.hidden = false;
+            copyButton.disabled = true;
+            downloadButton.disabled = true;
+            downloadAllButton.disabled = true;
+            cancelButton.hidden = true;
+
+            clearMessage();
+        }
+    </script>
+</body>
+
+</html>
