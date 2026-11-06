@@ -340,17 +340,17 @@
 
         <p class="description">
             In the username pattern, <strong>*</strong> is replaced with a number (0-9) and <strong>#</strong> with a
-            letter (a-z). Browse results page by page, copy any page of up to 50,000, or stream up to 50,000,000 (5
+            letter (a-z). You can enter a single pattern or multiple username/number patterns separated by <strong>,</strong> / <strong>/</strong> / <strong>|</strong>. Browse results page by page, copy any page of up to 50,000, or stream up to 50,000,000 (5
             crore) usernames straight to a .txt file.
         </p>
 
         <form id="generatorForm">
             <div class="field">
                 <label class="field-label" for="username">
-                    Username pattern
+                    Username / Number pattern (single or multiple separated by , / |)
                 </label>
 
-                <input type="text" id="username" placeholder="Example: raziul**## (* = 0-9, # = a-z)" autocomplete="off"
+                <input type="text" id="username" placeholder="Example: raziul**##, 017******** / karim*** | rahim## (* = 0-9, # = a-z)" autocomplete="off"
                     required>
             </div>
 
@@ -612,7 +612,139 @@
             currentResults: ''
         };
 
+        function allocateSegmentCounts(segments, targetBigInt) {
+            const n = segments.length;
+            const alloc = new Array(n).fill(0n);
+            let remaining = targetBigInt;
+            if (remaining <= 0n) {
+                return alloc;
+            }
+            let active = [];
+            for (let i = 0; i < n; i++) {
+                if (segments[i].combinations > 0n) {
+                    active.push(i);
+                }
+            }
+            while (remaining > 0n && active.length > 0) {
+                const k = BigInt(active.length);
+                const share = remaining / k;
+                const rem = remaining % k;
+                let minCap = segments[active[0]].combinations - alloc[active[0]];
+                for (let j = 1; j < active.length; j++) {
+                    const cap = segments[active[j]].combinations - alloc[active[j]];
+                    if (cap < minCap) {
+                        minCap = cap;
+                    }
+                }
+                if (share >= minCap) {
+                    for (let j = 0; j < active.length; j++) {
+                        const idx = active[j];
+                        alloc[idx] += minCap;
+                    }
+                    remaining -= minCap * k;
+                    active = active.filter(idx => alloc[idx] < segments[idx].combinations);
+                } else {
+                    for (let j = 0; j < active.length; j++) {
+                        const idx = active[j];
+                        alloc[idx] += share + (BigInt(j) < rem ? 1n : 0n);
+                    }
+                    remaining = 0n;
+                    break;
+                }
+            }
+            return alloc;
+        }
+
+        function resolveMultiSegment(segments, globalIndexBigInt, blockSizeBigInt) {
+            const step = blockSizeBigInt && blockSizeBigInt > 0n ? blockSizeBigInt : 50000n;
+            const blockIndex = globalIndexBigInt / step;
+            const rangeStart = blockIndex * step;
+            const totalComb = segments.totalCombinations;
+            const rangeEnd = rangeStart + step < totalComb ? rangeStart + step : totalComb;
+
+            let cache = segments._rangeCache;
+            if (!cache || cache.rangeStart !== rangeStart || cache.rangeEnd !== rangeEnd) {
+                const startAlloc = allocateSegmentCounts(segments, rangeStart);
+                const endAlloc = allocateSegmentCounts(segments, rangeEnd);
+                const slices = [];
+                let offsetCursor = 0n;
+                for (let i = 0; i < segments.length; i++) {
+                    const len = endAlloc[i] - startAlloc[i];
+                    if (len > 0n) {
+                        slices.push({
+                            segment: segments[i],
+                            localStart: startAlloc[i],
+                            offsetStart: offsetCursor,
+                            offsetEnd: offsetCursor + len
+                        });
+                        offsetCursor += len;
+                    }
+                }
+                cache = { rangeStart, rangeEnd, slices };
+                segments._rangeCache = cache;
+            }
+
+            const offsetInBlock = globalIndexBigInt - rangeStart;
+            const slices = cache.slices;
+            for (let i = 0; i < slices.length; i++) {
+                const s = slices[i];
+                if (offsetInBlock >= s.offsetStart && offsetInBlock < s.offsetEnd) {
+                    return {
+                        segment: s.segment,
+                        localIndex: s.localStart + (offsetInBlock - s.offsetStart)
+                    };
+                }
+            }
+            const lastSlice = slices[slices.length - 1];
+            return {
+                segment: lastSlice.segment,
+                localIndex: lastSlice.localStart
+            };
+        }
+
         function parsePattern(pattern, charCase) {
+            const rawParts = pattern.split(/[,/|]+/).map(s => s.trim()).filter(Boolean);
+            const parts = rawParts.length > 0 ? rawParts : [pattern.trim()];
+            const segments = [];
+            const allWildcards = [];
+            let numberCount = 0;
+            let charCount = 0;
+            let totalCombinations = 0n;
+
+            for (let i = 0; i < parts.length; i++) {
+                const segPattern = parts[i];
+                const single = parseSinglePattern(segPattern, charCase);
+                const segTokens = tokenizePattern(segPattern);
+                let segCombinations = 1n;
+                for (const w of single.wildcards) {
+                    segCombinations *= w.base;
+                    allWildcards.push(w);
+                }
+                numberCount += single.numberCount;
+                charCount += single.charCount;
+                totalCombinations += segCombinations;
+                segments.push({
+                    pattern: segPattern,
+                    patternTokens: segTokens,
+                    wildcards: single.wildcards,
+                    combinations: segCombinations
+                });
+            }
+
+            segments.totalCombinations = totalCombinations;
+            allWildcards.segments = segments;
+
+            return {
+                wildcards: allWildcards,
+                numberCount,
+                charCount,
+                totalWildcards: numberCount + charCount,
+                totalCombinations,
+                segments
+            };
+        }
+
+        function parseSinglePattern(pattern, charCase) {
             const letterSet = characterSets[charCase] || characterSets.lowercase;
             const wildcards = [];
             let numberCount = 0;
@@ -714,7 +846,7 @@
 
                 let totalCombinations = 1n;
                 for (const w of parsed.wildcards) {
-                    totalCombinations *= w.base;
+                    totalCombinations = parsed.totalCombinations;
                 }
 
                 const totalPages = divideAndRoundUp(
@@ -734,7 +866,7 @@
                 );
 
                 state.pattern = pattern;
-                state.patternTokens = tokenizePattern(pattern);
+                state.patternTokens = parsed.segments[0].patternTokens;
                 state.parsedWildcards = parsed.wildcards;
                 state.numberCount = parsed.numberCount;
                 state.charCount = parsed.charCount;
@@ -874,6 +1006,12 @@
             combinationIndex
         ) {
             let currentIndex = combinationIndex;
+            if (parsedWildcards && parsedWildcards.segments && parsedWildcards.segments.length > 1) {
+                const resolved = resolveMultiSegment(parsedWildcards.segments, BigInt(combinationIndex), state.pageSize);
+                patternTokens = resolved.segment.patternTokens;
+                parsedWildcards = resolved.segment.wildcards;
+                currentIndex = resolved.localIndex;
+            }
             const k = parsedWildcards.length;
             const replacements = new Array(k);
 
@@ -911,7 +1049,8 @@
             statsBox.classList.add('visible');
             paginationBox.classList.add('visible');
 
-            let wildcardText = formatNumber(state.totalWildcards);
+            const segCount = (state.parsedWildcards && state.parsedWildcards.segments) ? state.parsedWildcards.segments.length : 1;
+            let wildcardText = (segCount > 1 ? `${formatNumber(segCount)} patterns • ` : '') + formatNumber(state.totalWildcards);
             if (state.totalWildcards > 0) {
                 const details = [];
                 if (state.numberCount > 0) {
@@ -1179,6 +1318,15 @@
             indexNumber
         ) {
             let current = indexNumber;
+            if (parsedWildcards && parsedWildcards.segments && parsedWildcards.segments.length > 1) {
+                const resolved = resolveMultiSegment(parsedWildcards.segments, BigInt(indexNumber), state.downloadBlockSize || state.pageSize);
+                if (resolved.localIndex > 9007199254740991n) {
+                    return generateCombinationAtIndex(resolved.segment.patternTokens, resolved.segment.wildcards, resolved.localIndex);
+                }
+                patternTokens = resolved.segment.patternTokens;
+                parsedWildcards = resolved.segment.wildcards;
+                current = Number(resolved.localIndex);
+            }
             const k = parsedWildcards.length;
             const replacements = new Array(k);
 
@@ -1273,6 +1421,10 @@
                         : state.totalCombinations;
 
                 const count = Number(totalToWrite);
+                state.downloadBlockSize = totalToWrite;
+                if (state.parsedWildcards && state.parsedWildcards.segments) {
+                    state.parsedWildcards.segments._rangeCache = null;
+                }
 
                 if (count <= 0) {
                     showMessage(
